@@ -11,6 +11,9 @@ RUN git clone https://github.com/Otnielush/character_training.git
 RUN cd character_training && git submodule update --init --recursive
 
 WORKDIR /app/character_training
+
+COPY requirements.txt .
+
 RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
 # WORKDIR /app/character_inference
@@ -32,22 +35,26 @@ RUN python3 -m pip install torch torchvision torchaudio --index-url https://down
 
 RUN apt-get install -y tmux nvtop htop
 
-ENV HF_HOME="/workspace/hf"
-ENV HF_HUB_CACHE="/workspace/hf"
+ENV BASE_DIR="/runpod-volume"
+ENV HF_HOME="${BASE_DIR}/hf"
+ENV HF_HUB_CACHE="${BASE_DIR}/hf"
 ENV GPU_NUM=1
 
 # Important paths
 # dir for saving trained weights
-WORKDIR /training_output
+# WORKDIR /training_output
 # dir for images to train on
-WORKDIR /dataset
+# WORKDIR /dataset
 # dir for models  /workspace/hf
 # dir for training config /workspace/config
 
+COPY start_training.sh handler.py schema.py preprocess_images.py .
 
 WORKDIR /app/character_training
+
 RUN ["chmod", "+x", "/app/character_training/start_training.sh"]
-CMD ["/app/character_training/start_training.sh"]
+# CMD ["/app/character_training/start_training.sh"]
+CMD ["python3", "-u", "handler.py"]
 
 # run container important params:
     # --gpus=all  - give access to gpus

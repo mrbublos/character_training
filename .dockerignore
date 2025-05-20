@@ -1,0 +1,6 @@
+/ui
+**/*.ipynb
+.vscode
+.github
+notebooks
+.venv

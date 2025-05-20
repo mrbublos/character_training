@@ -35,3 +35,4 @@ huggingface_hub
 peft
 gradio
 python-slugify
+runpod==1.7.9

@@ -12,8 +12,6 @@ import numpy as np
 from pillow_heif import register_heif_opener
 register_heif_opener()
 
-
-
 def run_model(task_prompt, image, text_input=None):
     if text_input is None:
         prompt = task_prompt
@@ -127,7 +125,6 @@ def process_directory(args, image_dir, total_to_process: int = None, ):
         os.makedirs(output_dir, exist_ok=True)
     else:
         output_dir = image_dir
-
     contents = [fl for fl in os.listdir(image_dir) if
                 (os.path.splitext(fl)[-1].lower() in [".jpg", ".png", ".jpeg", ".heic"] or os.path.isdir(fl))]
     for filename in tqdm(contents, desc="Processing Images"):
@@ -166,6 +163,9 @@ def process_directory(args, image_dir, total_to_process: int = None, ):
                     caption = (args.trigger + " " + caption).strip()
 
                 output_filepath = os.path.join(output_dir, filename)
+                print('========1')
+                print(f"Processing output {output_filepath}")
+
                 image_resized.save(output_filepath, format='JPEG', quality=95)
                 # save in textfile
                 with open(os.path.splitext(output_filepath)[0] + ".txt", 'w') as f:
@@ -176,6 +176,7 @@ def process_directory(args, image_dir, total_to_process: int = None, ):
                     break
 
             except Exception as e:
+                print(f'error process_directory: {e}')
                 import traceback
 
                 if "CUDA error" in str(e):
@@ -186,7 +187,7 @@ def process_directory(args, image_dir, total_to_process: int = None, ):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Process images and generate captions.")
-    parser.add_argument("input_dir", type=str, help="Directory containing the images.")
+    parser.add_argument("--input_dir", default="", type=str, help="Directory containing the images.")
     parser.add_argument("--output_dir", type=str, default="", help="Directory to save images and captions.")
     parser.add_argument("--trigger",type=str,default="[trigger]",help="Trigger word/s for character")
     parser.add_argument("--target_size",type=int,default=1024,help="Side size for image (squared)")
@@ -196,7 +197,30 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def start(input_dir, output_dir):
+    args = parse_args()
+    args.input_dir = input_dir
+    args.output_dir = output_dir
 
+    print(f"Ouput processing dir {args.output_dir}")
+    print(f"Input processing dir {args.input_dir}")
+
+    if not (args.no_caption and args.no_transform):
+        global model
+        global processor
+        global model_name
+        global device
+        global torch_dtype
+
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        torch_dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+        model_name = "microsoft/Florence-2-large"
+
+        model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch_dtype, trust_remote_code=True).to(
+            device).eval()
+        processor = AutoProcessor.from_pretrained(model_name, trust_remote_code=True)
+
+    process_directory(args, args.input_dir)
 
 if __name__ == "__main__":
     args = parse_args()
