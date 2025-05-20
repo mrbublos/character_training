@@ -28,7 +28,7 @@ def create_config(user_id, steps):
     logger.debug(f"Updated config input folder to {input_folder} from {old_input_folder}")
 
     old_output_folder = config['config']['name']
-    output_folder = f"{BASE_DIR}/{TRAINED_MODELS_DIR}/{user_id}"
+    output_folder = user_id
     config['config']['name'] = output_folder
     logger.debug(f"Updated config output folder to {output_folder} from {old_output_folder}")
 
@@ -36,6 +36,11 @@ def create_config(user_id, steps):
     new_steps = steps or old_steps
     config['config']['process'][0]['train']['steps'] = new_steps
     logger.debug(f"Updated config steps from {old_steps} to {new_steps}")
+
+    old_training_folder = config['config']['process'][0]['training_folder']
+    new_training_folder = f"{BASE_DIR}/{TRAINED_MODELS_DIR}"
+    config['config']['process'][0]['training_folder'] = new_training_folder
+    logger.debug(f"Updated config training_folder from {old_training_folder} to {new_training_folder}")
 
     config_name = f"{BASE_DIR}/{RAW_IMAGES_DIR}/{user_id}/config.yaml"
     with open(config_name, 'w') as file:
