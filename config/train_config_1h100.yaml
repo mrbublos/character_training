@@ -66,7 +66,7 @@ config:
           cache_latents_to_disk: true  # leave this true unless you know what you're doing
           resolution: [ 512, 768, 1024]  # flux enjoys multiple resolutions
       train:
-        batch_size: 2
+        batch_size: 5
         steps: 1000  # total number of steps to train 500 - 4000 is a good range
         gradient_accumulation_steps: 2
         train_unet: true
@@ -79,7 +79,7 @@ config:
         # uncomment this to skip the pre training sample
         skip_first_sample: true
         # uncomment to completely disable sampling
-#        disable_sampling: true
+        disable_sampling: true
         # uncomment to use new vell curved weighting. Experimental but may produce better results
         linear_timesteps: true
         lr_scheduler: linear
@@ -99,9 +99,9 @@ config:
         # huggingface model name or path
         name_or_path: "black-forest-labs/FLUX.1-dev"
         is_flux: true
-        quantize: true  # run 8bit mixed precision
+        quantize: false  # run 8bit mixed precision
         xformers: true
-#        low_vram: true  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
+        low_vram: false  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
       sample:
         sampler: "flowmatch" # must match train.noise_scheduler
         sample_every: 1200 # sample every this many steps
